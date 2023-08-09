@@ -63,12 +63,10 @@ async function readFlow(page) {
       } else {
         vizLoadFailure++;
       }
+      console.log(`vizLoadSuccess = ${vizLoadSuccess}, vizLoadFailure = ${vizLoadFailure}`);
     }
 
     keepSearching = (numResultsOnPage >= 20);
-
-    console.log(`keepSearching = ${keepSearching}`);
-    console.log(`vizLoadSuccess = ${vizLoadSuccess}, vizLoadFailure = ${vizLoadFailure}`);
   }
 }
 
@@ -95,7 +93,7 @@ async function gotoVizhomeInNewTab(href, context) {
   /* Using #centeringContainer is a little brittle because Vizql team can change the id,
   but it's definitely better than waiting for a constant timeout */ 
   try {
-    await frameLoc.locator("#centeringContainer").click({ timeout: 10000 });
+    await frameLoc.locator("#centeringContainer").click({ timeout: 15000 });
   } catch (error) {
     console.error(error);
     return false;
@@ -104,6 +102,6 @@ async function gotoVizhomeInNewTab(href, context) {
     await newTab.screenshot({ path: "./screenshots/" + href.replaceAll('/', '_') + '.png' });  
     //close tab
     await newTab.close();
-    return true;
   }
+  return true;
 }
