@@ -1,0 +1,21 @@
+config:
+  target: https://public.tableau.com
+  plugins:
+    metrics-by-endpoint: {}
+  phases:
+    - duration: 300
+      arrivalCount: 5
+      maxVusers: 5
+      name: Warm up phase
+    - duration: 300
+      arrivalCount: 10
+      maxVusers: 5
+      name: Spike phase
+  engines:
+    playwright: {
+      defaultTimeout: 300000
+    }
+  processor: "tests/readload.spec.js"
+scenarios:
+  - engine: playwright
+    testFunction: "readFlow"
