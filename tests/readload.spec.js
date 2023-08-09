@@ -12,16 +12,21 @@ const search_keywords = ['America', 'Canada', 'India', 'Japan', 'Singapore', 'En
 const baseUrl = 'https://public.tableau.com';
 
 async function readFlow(page) {
+  console.log(`starting readFlow`);
+
   const context = page.context();
 
   await page.goto(baseUrl, { timeout: 5000 });
+  console.log(`done with home page`);
 
   //accept the cookies
   await page.getByRole('button', { name: "Accept All Cookies" }).click();
+  console.log(`done with accepting cookies`);
 
   // Find viz of the day and click it
   const VizOfTheDayCard = page.getByTestId("VizOfTheDayCard-title");
   await gotoVizhomeAndBack(VizOfTheDayCard, page);
+  console.log(`done with viz of the day`);
 
   // //about 10% of users scroll all the way to the bottom of home page
   // if (Math.random() < 0.9) {
