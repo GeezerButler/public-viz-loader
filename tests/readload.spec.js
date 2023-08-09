@@ -1,5 +1,9 @@
 // @ts-check
 
+//Learnings
+//1. Always have explciti timeout in any wait or click action
+//2. Parallel tabs are tempting but take massive memory and lots of context switching
+
 module.exports = { readFlow };
 
 const { test, expect } = require('@playwright/test');
@@ -23,7 +27,7 @@ async function readFlow(page) {
   //accept the cookies OR click the welcome banner
   const cookiesBanner = page.getByRole('button', { name: "Accept All Cookies" });
   const welcomeBanner = page.getByTestId('WelcomeBanner');
-  await Promise.any([cookiesBanner.click(), welcomeBanner.click()]);
+  await Promise.any([cookiesBanner.click({ timeout: 5000 }), welcomeBanner.click({ timeout: 5000 })]);
 
   console.log(`done with accepting cookies`);
 
@@ -39,6 +43,7 @@ async function readFlow(page) {
   let pageNum = 0;
   let vizLoadSuccess = 0;
   let vizLoadFailure = 0;
+  const startTime  = Date.now();
   while (pageNum < 20 && keepSearching) {
     pageNum = pageNum + 1;
     const searchUrl = encodeURI(`https://public.tableau.com/app/search/vizzes/${searchKeyword}?page=${pageNum}`);
@@ -48,7 +53,12 @@ async function readFlow(page) {
     //Wait for atleast 1 search result OR the message that says that no results are available
     const vizCards = page.getByTestId('VizCard');
     const noResults = page.getByText('No results found.');
-    await Promise.any([vizCards.first().waitFor(), noResults.waitFor()]);
+    try {
+      await Promise.any([vizCards.first().waitFor({ timeout: 10000 }), noResults.waitFor({ timeout: 10000 })]);
+    } catch (error) {
+      console.log(`skipping search page ${pageNum} due to timeout`)
+      continue;
+    }
 
     //visit every viz and every author profile on this page of the search result
     const numResultsOnPage = await vizCards.count();
@@ -67,6 +77,9 @@ async function readFlow(page) {
     }
 
     keepSearching = (numResultsOnPage >= 20);
+
+    const vizLoadRate = ((vizLoadSuccess + vizLoadFailure) * 1000) / (startTime - Date.now());
+    console.log(`viz load rate = ${vizLoadRate}`);
   }
 }
 
