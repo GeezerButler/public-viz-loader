@@ -67,6 +67,8 @@ async function readFlow(page) {
 
     //visit every viz and every author profile on this page of the search result
     const numResultsOnPage = await vizCards.count();
+    console.log(`Got ${numResultsOnPage} search results`);
+    
     const newTabsPromises = []
     for (let i=0; i<numResultsOnPage; i++) {
       //every vizcard has 3 links, 1st and 2nd are the viz and 3rd is the author profile
