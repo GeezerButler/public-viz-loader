@@ -7,7 +7,8 @@ const { test, expect } = require('@playwright/test');
 test('read flow', async ({ page }) => readFlow(page));
 
 const search_keywords = ['America', 'Canada', 'India', 'Japan', 'Singapore', 'England', 'Australia', 'Italy', 'Germany', 'Spain'
-,'Argentina', 'Chile', 'Brazil', 'China', 'Ukraine', 'Russia', 'Turkey', 'Pakistan', 'Bhutan', 'Morocco', 'Sweden', 'Denmark'];
+,'Argentina', 'Chile', 'Brazil', 'China', 'Ukraine', 'Russia', 'Turkey', 'Pakistan', 'Bhutan', 'Morocco', 'Sweden', 'Denmark',
+'Egypt', 'Mexico', 'Iraq', 'Nigeria', 'Cuba', 'England', 'France', 'Greece', 'Phillipines', 'Poland'];
 
 const baseUrl = 'https://public.tableau.com';
 
@@ -49,7 +50,7 @@ async function readFlow(page) {
   let pageNum = 0;
   let vizLoadSuccess = 0;
   let vizLoadFailure = 0;
-  while (pageNum <= 5) {
+  while (pageNum < 20 && keepSearching) {
     pageNum = pageNum + 1;
     const searchUrl = encodeURI(`https://public.tableau.com/app/search/vizzes/${searchKeyword}?page=${pageNum}`);
     console.log(searchUrl);
@@ -85,7 +86,7 @@ async function readFlow(page) {
 
     keepSearching = (numResultsOnPage >= 20);
 
-    //console.log(numResultsOnPage + " " + keepSearching);
+    console.log(`keepSearching = ${keepSearching}`);
     console.log(`vizLoadSuccess = ${vizLoadSuccess}, vizLoadFailure = ${vizLoadFailure}`);
   }
 }
@@ -113,16 +114,12 @@ async function gotoVizhomeInNewTab(href, context) {
   /* Using #centeringContainer is a little brittle because Vizql team can change the id,
   but it's definitely better than waiting for a constant timeout */ 
   try {
-    await frameLoc.locator("#centeringContainer").click({ timeout: 30000 });
-  } catch (error) {
-    console.error(error);
-    throw error;
+    await frameLoc.locator("#centeringContainer").click({ timeout: 10000 });
   } finally {
     //screenshot
     await newTab.screenshot({ path: "./screenshots/" + href.replaceAll('/', '_') + '.png' });  
     //close tab
     await newTab.close();
-    console.log("tab was closed");
   }
 }
 
