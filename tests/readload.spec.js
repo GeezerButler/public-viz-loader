@@ -68,7 +68,7 @@ async function readFlow(page) {
     //visit every viz and every author profile on this page of the search result
     const numResultsOnPage = await vizCards.count();
     console.log(`Got ${numResultsOnPage} search results`);
-    
+
     const newTabsPromises = []
     for (let i=0; i<numResultsOnPage; i++) {
       //every vizcard has 3 links, 1st and 2nd are the viz and 3rd is the author profile
@@ -106,16 +106,24 @@ async function gotoVizhomeAndBack(locator, page) {
 async function gotoVizhomeInNewTab(href, context) {
   const newTab = await context.newPage();
 
-  await newTab.goto(baseUrl + href);  
+  await newTab.goto(baseUrl + href);
 
   //make sure the viz is loaded completely inside the iframe
   const frameLoc = newTab.getByTitle("Data Visualization").frameLocator(':scope');
   /* Using #centeringContainer is a little brittle because Vizql team can change the id,
   but it's definitely better than waiting for a constant timeout */ 
-  await frameLoc.locator("#centeringContainer").click({ timeout: 15000 });
-
-  //close tab
-  await newTab.close();
+  try {
+    await frameLoc.locator("#centeringContainer").click({ timeout: 30000 });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  } finally {
+    //screenshot
+    await newTab.screenshot({ path: "./screenshots/" + href.replaceAll('/', '_') + '.png' });  
+    //close tab
+    await newTab.close();
+    console.log("tab was closed");
+  }
 }
 
 async function gotoProfileAndBack(href, context) {
