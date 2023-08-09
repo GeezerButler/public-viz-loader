@@ -78,8 +78,8 @@ async function readFlow(page) {
 
     keepSearching = (numResultsOnPage >= 20);
 
-    const vizLoadRate = ((vizLoadSuccess + vizLoadFailure) * 1000) / (startTime - Date.now());
-    console.log(`viz load rate = ${vizLoadRate}`);
+    const vizLoadRate = ((vizLoadSuccess + vizLoadFailure) * 1000) / (Date.now() - startTime);
+    console.log(`viz load rate = ${vizLoadRate} per second`);
   }
 }
 
