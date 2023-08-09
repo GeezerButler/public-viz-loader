@@ -1,10 +1,10 @@
 // @ts-check
 
-module.exports = { readFlow };
+module.exports = { readFlowParallel };
 
 const { test, expect } = require('@playwright/test');
 
-test('read flow', async ({ page }) => readFlow(page));
+// test('read flow', async ({ page }) => readFlowParallel(page));
 
 const search_keywords = ['America', 'Canada', 'India', 'Japan', 'Singapore', 'England', 'Australia', 'Italy', 'Germany', 'Spain'
 ,'Argentina', 'Chile', 'Brazil', 'China', 'Ukraine', 'Russia', 'Turkey', 'Pakistan', 'Bhutan', 'Morocco', 'Sweden', 'Denmark',
@@ -12,7 +12,7 @@ const search_keywords = ['America', 'Canada', 'India', 'Japan', 'Singapore', 'En
 
 const baseUrl = 'https://public.tableau.com';
 
-async function readFlow(page) {
+async function readFlowParallel(page) {
   console.log(`starting readFlow`);
 
   const context = page.context();
@@ -32,6 +32,17 @@ async function readFlow(page) {
   await gotoVizhomeAndBack(VizOfTheDayCard, page);
   console.log(`done with viz of the day`);
 
+  // //about 10% of users scroll all the way to the bottom of home page
+  // if (Math.random() < 0.9) {
+  //   //scroll all the way to the bottom
+  //   await page.keyboard.down('End');
+  //   //sip a little coffee
+  //   await page.waitForTimeout(2000);
+  // }
+
+  //now go to search
+  //await page.getByLabel('Go to search').click();
+
   //choose random search terms and perform the search
   const searchKeyword = search_keywords[Math.floor(Math.random() * search_keywords.length)]
 
@@ -45,6 +56,11 @@ async function readFlow(page) {
     console.log(searchUrl);
     await page.goto(searchUrl);
 
+    //fill the search box and press Enter
+    // const searchBox = page.getByLabel('Search input');
+    // await searchBox.fill(search_keyword);
+    // await searchBox.press('Enter');
+
     //Wait for atleast 1 search result OR the message that says that no results are available
     const vizCards = page.getByTestId('VizCard');
     const noResults = page.getByText('No results found.');
@@ -54,16 +70,19 @@ async function readFlow(page) {
     const numResultsOnPage = await vizCards.count();
     console.log(`Got ${numResultsOnPage} search results`);
 
+    const newTabsPromises = []
     for (let i=0; i<numResultsOnPage; i++) {
       //every vizcard has 3 links, 1st and 2nd are the viz and 3rd is the author profile
       const vizHref = await vizCards.nth(i).getByRole('link').first().getAttribute('href');
-      const success = await gotoVizhomeInNewTab(vizHref, context);
-      if (success) {
-        vizLoadSuccess++;
-      } else {
-        vizLoadFailure++;
-      }
+      //await gotoVizhomeInNewTab(vizHref, context);
+      newTabsPromises.push(gotoVizhomeInNewTab(vizHref, context)) ;
+
+      // const profileHref = await vizCards.nth(i).getByRole('link').nth(2).getAttribute('href');
+      // await gotoProfileAndBack(profileHref, context);
     }
+    const results = await Promise.allSettled(newTabsPromises);
+    vizLoadSuccess = vizLoadSuccess + results.filter(pr => pr.status === "fulfilled").length;
+    vizLoadFailure = vizLoadFailure + results.filter(pr => pr.status === "rejected").length;
 
     keepSearching = (numResultsOnPage >= 20);
 
@@ -96,14 +115,21 @@ async function gotoVizhomeInNewTab(href, context) {
   but it's definitely better than waiting for a constant timeout */ 
   try {
     await frameLoc.locator("#centeringContainer").click({ timeout: 10000 });
-  } catch (error) {
-    console.error(error);
-    return false;
   } finally {
     //screenshot
     await newTab.screenshot({ path: "./screenshots/" + href.replaceAll('/', '_') + '.png' });  
     //close tab
     await newTab.close();
-    return true;
   }
+}
+
+async function gotoProfileAndBack(href, context) {
+  const newTab = await context.newPage();
+
+  await newTab.goto(baseUrl + href);
+
+  await newTab.getByTestId('ProfileNav-navItem-vizzes').first().waitFor(); //Wait for at least the profile navbar to appear
+
+  //close tab
+  await newTab.close();
 }
