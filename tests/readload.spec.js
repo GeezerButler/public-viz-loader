@@ -19,8 +19,11 @@ async function readFlow(page) {
   await page.goto(baseUrl, { timeout: 5000 });
   console.log(`done with home page`);
 
-  //accept the cookies
-  await page.getByRole('button', { name: "Accept All Cookies" }).click();
+  //accept the cookies OR click the welcome banner
+  const cookiesBanner = page.getByRole('button', { name: "Accept All Cookies" });
+  const welcomeBanner = page.getByTestId('WelcomeBanner');
+  await Promise.any([cookiesBanner.click(), welcomeBanner.click()]);
+
   console.log(`done with accepting cookies`);
 
   // Find viz of the day and click it
