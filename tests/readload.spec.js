@@ -27,7 +27,11 @@ async function readFlow(page) {
   //accept the cookies OR click the welcome banner
   const cookiesBanner = page.getByRole('button', { name: "Accept All Cookies" });
   const welcomeBanner = page.getByTestId('WelcomeBanner');
-  await Promise.any([cookiesBanner.click({ timeout: 5000 }), welcomeBanner.click({ timeout: 5000 })]);
+  try {
+    await Promise.any([cookiesBanner.click({ timeout: 5000 }), welcomeBanner.click({ timeout: 5000 })]);
+  } finally {
+    await page.screenshot({ path: './screenshots/homepage.png' });  
+  }
 
   console.log(`done with accepting cookies`);
 
