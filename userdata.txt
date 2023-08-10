@@ -1,2 +1,2 @@
 #!/bin/bash
-/home/ubuntu/public-viz-loader/runner.sh
+docker run -d -v /home/ubuntu/public-viz-loader/screenshots:/app/screenshots --restart unless-stopped public-load >> /home/ubuntu/docker.log

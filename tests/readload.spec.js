@@ -3,6 +3,7 @@
 //Learnings
 //1. Always have explciti timeout in any wait or click action
 //2. Parallel tabs are tempting but take massive memory and lots of context switching
+//3. Take screenshots when you face errors. Helps in debugging
 
 module.exports = { readFlow };
 
@@ -29,11 +30,12 @@ async function readFlow(page) {
   const welcomeBanner = page.getByTestId('WelcomeBanner');
   try {
     await Promise.any([cookiesBanner.click({ timeout: 5000 }), welcomeBanner.click({ timeout: 5000 })]);
-  } finally {
-    await page.screenshot({ path: './screenshots/homepage.png' });  
+    console.log(`done with accepting cookies`);
+  } catch (error) {
+    console.log(`could not click cookie or banner`);
+    await page.screenshot({ path: './screenshots/homepage.png' });
+    throw error;
   }
-
-  console.log(`done with accepting cookies`);
 
   // Find viz of the day and click it
   const VizOfTheDayCard = page.getByTestId("VizOfTheDayCard-title");
@@ -61,6 +63,7 @@ async function readFlow(page) {
       await Promise.any([vizCards.first().waitFor({ timeout: 10000 }), noResults.waitFor({ timeout: 10000 })]);
     } catch (error) {
       console.log(`skipping search page ${pageNum} due to timeout`)
+      await page.screenshot({ path: './screenshots/searchError.png' });  
       continue;
     }
 
@@ -113,11 +116,12 @@ async function gotoVizhomeInNewTab(href, context) {
     await frameLoc.locator("#centeringContainer").click({ timeout: 15000 });
   } catch (error) {
     console.error(error);
+    
+    // screenshot for debugging
+    await newTab.screenshot({ path: "./screenshots/" + href.replaceAll('/', '_') + '.png' });  
+    
     return false;
   } finally {
-    // screenshot for debugging
-    // await newTab.screenshot({ path: "./screenshots/" + href.replaceAll('/', '_') + '.png' });  
-
     //close tab
     await newTab.close();
   }
