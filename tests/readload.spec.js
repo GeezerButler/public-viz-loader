@@ -44,7 +44,7 @@ async function readFlow(page) {
   let vizLoadSuccess = 0;
   let vizLoadFailure = 0;
   const startTime  = Date.now();
-  while (pageNum < 20 && keepSearching) {
+  while (keepSearching) {
     pageNum = pageNum + 1;
     const searchUrl = encodeURI(`https://public.tableau.com/app/search/vizzes/${searchKeyword}?page=${pageNum}`);
     console.log(searchUrl);
@@ -111,8 +111,9 @@ async function gotoVizhomeInNewTab(href, context) {
     console.error(error);
     return false;
   } finally {
-    //screenshot
-    await newTab.screenshot({ path: "./screenshots/" + href.replaceAll('/', '_') + '.png' });  
+    // screenshot for debugging
+    // await newTab.screenshot({ path: "./screenshots/" + href.replaceAll('/', '_') + '.png' });  
+
     //close tab
     await newTab.close();
   }
